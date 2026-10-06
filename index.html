@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Class 10-C Attendance</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f6f5;color:#222}
+.container{max-width:700px;margin:auto;padding:8px}h2{margin:6px 0 2px;font-size:20px}
+.sub{font-size:12px;color:#666;margin-bottom:8px}.topButtons{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:8px}
+button{border:none;border-radius:8px;padding:10px 5px;font-weight:bold;font-size:13px}.green{background:#198754;color:#fff}.light{background:#e8f3ed;color:#145c38}
+.headerRow,.studentRow{display:grid;grid-template-columns:30px 48px minmax(0,1fr) 92px;gap:3px;align-items:center}
+.headerRow{font-size:10px;font-weight:bold;color:#666;padding:4px}.studentCard{background:#fff;border:1px solid #ddd;border-radius:9px;padding:5px;margin-bottom:4px}
+.sn{text-align:center;font-weight:bold;font-size:11px}.formNo{text-align:center;font-size:10px;font-family:monospace}
+.studentName{font-weight:bold;font-size:12px;line-height:1.15}.fatherName{font-size:9px;color:#777;margin-top:2px}
+select{width:100%;font-size:11px;padding:6px 2px;border:1px solid #ccc;border-radius:7px;background:white}
+.reason{grid-column:3/5;margin-top:4px;display:none;background:#fff8dc}
+.summary{margin-top:10px;padding:10px;background:#0f5132;color:#fff;border-radius:10px;font-size:13px}
+.warning{margin-top:8px;font-size:11px;color:#666}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Class 10-C Attendance</h2>
+<div class="sub">41 Students • Default Attendance = P</div>
+<div class="topButtons">
+<button class="light" onclick="setAllPresent()">सभी P</button>
+<button class="green" onclick="copyAttendance()">Copy</button>
+<button class="light" onclick="shareWhatsApp()">WhatsApp</button>
+</div>
+<div class="headerRow"><div>S.No.</div><div>Form</div><div>Student / Father</div><div>Attendance</div></div>
+<div id="students"></div>
+<div id="summary" class="summary"></div>
+<div class="warning">UPMSP पर final SAVE ATTENDANCE verify करने के बाद manually करें।</div>
+</div>
+<script>
+const students=[{sn:1,form:"0005",name:"ADITY KUMAR",father:"PRAMOD KUMAR"},{sn:2,form:"0006",name:"AJAY",father:"VIJENDRA"},{sn:3,form:"0008",name:"AMAN",father:"SUKHVEER"},{sn:4,form:"0009",name:"AMAN",father:"DINESH CHANDRA"},{sn:5,form:"0010",name:"AMAN KUMAR",father:"KARU"},{sn:6,form:"0011",name:"AMIT",father:"RAVENDRA"},{sn:7,form:"0013",name:"ANIL",father:"PYARELAL"},{sn:8,form:"0019",name:"ARSHIT",father:"PRAVEEN KUMAR"},{sn:9,form:"0020",name:"ARYAN CHAUHAN",father:"ANURUDH SINGH"},{sn:10,form:"0022",name:"ASHU KUMAR",father:"SUNIL"},{sn:11,form:"0024",name:"ATUL KUMAR",father:"ARVIND KUMAR"},{sn:12,form:"0025",name:"AYUSH",father:"DHEERENDRA"},{sn:13,form:"0028",name:"GANESH YADAV",father:"HARVEER SINGH"},{sn:14,form:"0030",name:"GOVIND",father:"AMARDEEP"},{sn:15,form:"0034",name:"HIMANSHU SHAKYA",father:"ARVIND KUMAR"},{sn:16,form:"0048",name:"PRASHANT",father:"HARVEER"},{sn:17,form:"0050",name:"PRIYANSHU",father:"RAJEEV KUMAR"},{sn:18,form:"0051",name:"RAM KUMAR",father:"VEDRAM SINGH"},{sn:19,form:"0052",name:"RAMAN",father:"SUKHVEER"},{sn:20,form:"0054",name:"RAVI",father:"ASHOK"},{sn:21,form:"0057",name:"RISHABH SHAKYA",father:"MUKESH KUMAR"},{sn:22,form:"0058",name:"RISHU KUMAR",father:"MANOHAR SINGH"},{sn:23,form:"0060",name:"ROHIT KUMAR",father:"JASHMEL SINGH"},{sn:24,form:"0064",name:"SANOJ",father:"SANTOSH"},{sn:25,form:"0065",name:"SARVESH KUMAR",father:"PREMPAL"},{sn:26,form:"0066",name:"SHANI KUMAR",father:"KISHANVEER"},{sn:27,form:"0070",name:"SHIVAM KUMAR",father:"SHER SINGH"},{sn:28,form:"0078",name:"ADARSH",father:"SUNEEL KUMAR"},{sn:29,form:"0084",name:"ANJU",father:"SUBHASH"},{sn:30,form:"0090",name:"BHAVANA",father:"RAM DULARE"},{sn:31,form:"0099",name:"KAJAL",father:"ABHILAKH"},{sn:32,form:"0104",name:"KARISHMA",father:"DHARMENDRA"},{sn:33,form:"0105",name:"KHUSHABU",father:"CHOTELAL"},{sn:34,form:"0107",name:"KIMATI",father:"PRAMOD"},{sn:35,form:"0118",name:"NEERAJ KUMARI",father:"UMESH SINGH"},{sn:36,form:"0122",name:"NIDHI",father:"SHIV KUMAR CHAUHAN"},{sn:37,form:"0129",name:"PRIYANKA",father:"MITHALESH"},{sn:38,form:"0140",name:"SANDHYA",father:"REENA"},{sn:39,form:"0143",name:"SHEJAL SHAKYA",father:"LOKENDRA SINGH"},{sn:40,form:"0159",name:"VANDANA",father:"VIRPAL"},{sn:41,form:"0166",name:"SUMIT KUMAR",father:"SUDHIR"}];
+function key(sn,t){return "10C_"+t+"_"+sn}
+function loadStudents(){
+ const box=document.getElementById("students");
+ students.forEach(s=>{
+  const a=localStorage.getItem(key(s.sn,"att"))||"P";
+  const r=localStorage.getItem(key(s.sn,"reason"))||"";
+  const card=document.createElement("div");card.className="studentCard";
+  card.innerHTML=`<div class="studentRow">
+   <div class="sn">${s.sn}</div><div class="formNo">${s.form}</div>
+   <div><div class="studentName">${s.name}</div><div class="fatherName">${s.father}</div></div>
+   <select id="att${s.sn}" onchange="attendanceChanged(${s.sn})">
+    <option value="P" ${a==="P"?"selected":""}>P</option>
+    <option value="AB" ${a==="AB"?"selected":""}>AB</option>
+    <option value="ON-LEAVE" ${a==="ON-LEAVE"?"selected":""}>ON-LEAVE</option>
+    <option value="CCA" ${a==="CCA"?"selected":""}>CCA</option>
+   </select>
+   <select id="reason${s.sn}" class="reason" onchange="reasonChanged(${s.sn})">
+    <option value="">Reason चुनें</option>
+    <option value="HEALTH" ${r==="HEALTH"?"selected":""}>स्वास्थ्य कारण</option>
+    <option value="FAMILY" ${r==="FAMILY"?"selected":""}>पारिवारिक कार्यक्रम</option>
+    <option value="OTHER" ${r==="OTHER"?"selected":""}>अन्य</option>
+   </select></div>`;
+  box.appendChild(card);
+  if(a==="ON-LEAVE") document.getElementById("reason"+s.sn).style.display="block";
+ });
+ updateSummary();
+}
+function attendanceChanged(sn){const a=document.getElementById("att"+sn).value,r=document.getElementById("reason"+sn);localStorage.setItem(key(sn,"att"),a);if(a==="ON-LEAVE")r.style.display="block";else{r.style.display="none";r.value="";localStorage.removeItem(key(sn,"reason"));}updateSummary();}
+function reasonChanged(sn){localStorage.setItem(key(sn,"reason"),document.getElementById("reason"+sn).value);updateSummary();}
+function setAllPresent(){students.forEach(s=>{document.getElementById("att"+s.sn).value="P";document.getElementById("reason"+s.sn).style.display="none";document.getElementById("reason"+s.sn).value="";localStorage.setItem(key(s.sn,"att"),"P");localStorage.removeItem(key(s.sn,"reason"));});updateSummary();}
+function getData(){const d={P:[],AB:[],HEALTH:[],FAMILY:[],OTHER:[],CCA:[]};students.forEach(s=>{const a=document.getElementById("att"+s.sn).value,r=document.getElementById("reason"+s.sn).value;if(a==="P")d.P.push(s.sn);else if(a==="AB")d.AB.push(s.sn);else if(a==="CCA")d.CCA.push(s.sn);else if(a==="ON-LEAVE"){if(r==="HEALTH")d.HEALTH.push(s.sn);else if(r==="FAMILY")d.FAMILY.push(s.sn);else d.OTHER.push(s.sn);}});return d;}
+function textOut(){const d=getData();return ["Class 10-C","AB: "+(d.AB.join(", ")||"-"),"HEALTH: "+(d.HEALTH.join(", ")||"-"),"FAMILY: "+(d.FAMILY.join(", ")||"-"),"OTHER: "+(d.OTHER.join(", ")||"-"),"CCA: "+(d.CCA.join(", ")||"-")].join("\n");}
+function updateSummary(){const d=getData();document.getElementById("summary").innerHTML=`<b>Summary</b><br>P: ${d.P.length} | AB: ${d.AB.length} | Health: ${d.HEALTH.length} | Family: ${d.FAMILY.length} | Other: ${d.OTHER.length} | CCA: ${d.CCA.length}`;}
+async function copyAttendance(){const t=textOut();try{await navigator.clipboard.writeText(t);alert("Attendance Copy हो गई:\n\n"+t)}catch(e){prompt("Copy करें:",t)}}
+function shareWhatsApp(){window.open("https://wa.me/?text="+encodeURIComponent(textOut()),"_blank")}
+loadStudents();
+</script>
+</body>
+</html>
